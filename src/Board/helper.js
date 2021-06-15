@@ -3,26 +3,26 @@ import _ from 'lodash';
 
 const keys = {
   'ArrowLeft': {
-    groupByField: 'y',
-    sortByField: 'x',
-    reverse: false,
+    moveAlongAxis: 'x',
+    readFromEnd: false,
   },
   'ArrowRight': {
-    groupByField: 'y',
-    sortByField: 'x',
-    reverse: true,
+    moveAlongAxis: 'x',
+    readFromEnd: true,
   },
   'ArrowDown': {
-    groupByField: 'x',
-    sortByField: 'y',
-    reverse: true,
+    moveAlongAxis: 'y',
+    readFromEnd: true,
   },
   'ArrowUp': {
-    groupByField: 'x',
-    sortByField: 'y',
-    reverse: false,
+    moveAlongAxis: 'y',
+    readFromEnd: false,
   }
 }
+
+const getFixedAxis = axis => (
+  axis === 'x' ? 'y' : 'x'
+);
 
 export const getInitialGame = size => (
   {
@@ -38,17 +38,17 @@ export const getInitialGame = size => (
   }
 );
 
-export const updateRow = (size, sortedRow, pressedKey) => {
-  const { reverse, sortByField } = pressedKey;
+const updateRow = (size, sortedRow, pressedKey) => {
+  const { readFromEnd, moveAlongAxis } = pressedKey;
   
-  const theRow = reverse ? _.reverse(sortedRow) : sortedRow;
-  const rowSize = theRow.length;
+  const rowSize = sortedRow.length;
   const newLine = [];
   let reference = null;
 
   for (let i = 0; i < rowSize; i++)
   {
-    const block = theRow[i];
+    const index = readFromEnd ? rowSize - 1 - i : i;
+    const block = sortedRow[index];
 
     if (!reference)
     {
@@ -56,7 +56,7 @@ export const updateRow = (size, sortedRow, pressedKey) => {
       if (i === rowSize - 1) {
         newLine.push({
           ...block,
-          [sortByField]: reverse ? size - 1 - newLine.length : newLine.length,
+          [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
         });
       }
       continue;
@@ -66,25 +66,40 @@ export const updateRow = (size, sortedRow, pressedKey) => {
       newLine.push({
         ...block,
         value: block.value * 2,
-        [sortByField]: reverse ? size - 1 - newLine.length : newLine.length,
+        [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
       });
       reference = null;
     } else {
       newLine.push({
         ...reference,
-        [sortByField]: reverse ? size - 1 - newLine.length : newLine.length,
+        [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
       });
       reference = block;
       if (i === rowSize - 1) {
         newLine.push({
           ...block,
-          [sortByField]: reverse ? size - 1 - newLine.length : newLine.length,
+          [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
         });
       }
     }
   }
 
-  return reverse ? _.reverse(newLine) : newLine;
+  return readFromEnd ? _.reverse(newLine) : newLine;
+}
+
+const generateNewRandomBlock = (size, emptySpaces) => {
+  const randomRow = emptySpaces[Math.floor(Math.random() * emptySpaces.length)];
+  const randomPos = Math.floor(Math.random() * randomRow.amount);
+  const moveAlongAxis = randomRow.pressedKey.moveAlongAxis;
+
+  return {
+    [moveAlongAxis]: randomRow.pressedKey.readFromEnd
+      ? randomPos
+      : randomPos + size - randomRow.amount,
+    [getFixedAxis(moveAlongAxis)]: randomRow.index,
+    id: uuidv4(),
+    value: Math.random() > 0.2 ? 2 : 4,
+  }
 }
 
 export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
@@ -92,12 +107,11 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
   const newBoard = [];
   const emptySpaces = [];
 
-  const rows = _.groupBy(currentBoard, pressedKey.groupByField);
+  const rows = _.groupBy(currentBoard, getFixedAxis(pressedKey.moveAlongAxis));
   for (let i = 0; i < size; i++)
   {
     if (rows[i]) {
-      const orderedRow = _.sortBy(rows[i], [pressedKey.sortByField]);
-      const newRow = updateRow(size, orderedRow, pressedKey);
+      const newRow = updateRow(size, rows[i], pressedKey);
       newBoard.push(...newRow);
 
       const emptySpacesAmount = size - newRow.length;
@@ -109,27 +123,51 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
     }
   }
 
-  const randomRow = emptySpaces[Math.floor(Math.random() * emptySpaces.length)];
-  const randomPos = Math.floor(Math.random() * randomRow.amount);
-  const newBlockPosition = {
-    [randomRow.pressedKey.sortByField]: randomRow.pressedKey.reverse ? randomPos : randomPos + size - randomRow.amount,
-    [randomRow.pressedKey.groupByField]: randomRow.index,
+  if (!_.isEqual(currentBoard, newBoard)){
+    newBoard.push(generateNewRandomBlock(size, emptySpaces));
   }
 
-  newBoard.push({
-    ...newBlockPosition,
-    id: uuidv4(),
-    value: 2,
-  })
-  
   return ({ isUpdated: true, blocks: newBoard });
 }
 
 export const sortBlocksByAxis = (currentBoard, pressedKeyStr) => (
   {
     isUpdated: false,
-    blocks: _.sortBy(currentBoard, [keys[pressedKeyStr].groupByField, keys[pressedKeyStr].sortByField]),
+    blocks: _.sortBy(
+      currentBoard,
+      [getFixedAxis(keys[pressedKeyStr].moveAlongAxis), keys[pressedKeyStr].moveAlongAxis]
+    ),
   }
 );
+
+export const getBlockColor = value => {
+  switch(value)
+  {
+    case 2:
+      return '#282c34';
+    case 4:
+      return '#253049';
+    case 8:
+      return '#1e3769';
+    case 16:
+      return '#1a3e86';
+    case 32:
+      return '#16429b';
+    case 64:
+      return '#1048b8';
+    case 128:
+      return '#0748cb';
+    case 256:
+      return '#2566e9';
+    case 512:
+      return '#5287f1';
+    case 1024:
+      return '#73a0f9';
+    case 2048: 
+      return '#88aaf0'
+    default:
+      return ''
+  }
+}
 
 export default null;

@@ -2,7 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
-import { getInitialGame, updateBoardFunc, sortBlocksByAxis } from './helper';
+import {
+  getInitialGame,
+  updateBoardFunc,
+  sortBlocksByAxis,
+  getBlockColor
+} from './helper';
 import { BoardWrapper } from './styles';
 
 import { Wrapper } from '../Square/styles';
@@ -34,7 +39,11 @@ function Board({ pressedKeyEvent }) {
               timeout={150}
               classNames="block"
             >
-              <Wrapper row={item.y} column={item.x}>
+              <Wrapper
+                blockColor={getBlockColor(item.value)}
+                row={item.y}
+                column={item.x}
+              >
                 {item.value}
               </Wrapper>
             </CSSTransition>
