@@ -35,20 +35,21 @@ export const getInitialGame = size => (
       }
     ],
     isUpdated: true,
+    isGameOver: false,
   }
 );
 
-const updateRow = (size, sortedRow, pressedKey) => {
+const updateRow = (size, row, pressedKey) => {
   const { readFromEnd, moveAlongAxis } = pressedKey;
   
-  const rowSize = sortedRow.length;
+  const rowSize = row.length;
   const newLine = [];
   let reference = null;
 
   for (let i = 0; i < rowSize; i++)
   {
     const index = readFromEnd ? rowSize - 1 - i : i;
-    const block = sortedRow[index];
+    const block = row[index];
 
     if (!reference)
     {
@@ -59,9 +60,8 @@ const updateRow = (size, sortedRow, pressedKey) => {
           [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
         });
       }
-      continue;
     }
-    if (block.value === reference.value)
+    else if (block.value === reference.value)
     {
       newLine.push({
         ...block,
@@ -69,7 +69,8 @@ const updateRow = (size, sortedRow, pressedKey) => {
         [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
       });
       reference = null;
-    } else {
+    }
+    else {
       newLine.push({
         ...reference,
         [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
@@ -127,7 +128,12 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
     newBoard.push(generateNewRandomBlock(size, emptySpaces));
   }
 
-  return ({ isUpdated: true, blocks: newBoard });
+  if (newBoard.length === size * size) {
+    // TODO:
+    // Check if it's possible a new move
+  }
+
+  return ({ isUpdated: true, isGameOver: false, blocks: newBoard });
 }
 
 export const sortBlocksByAxis = (currentBoard, pressedKeyStr) => (
