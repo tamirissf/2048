@@ -8,7 +8,7 @@ import {
   getInitialGame,
   updateBoardFunc,
   sortBlocksByAxis,
-  getBlockColor
+  getBlockColor,
 } from './helper';
 import { BoardWrapper } from './styles';
 
