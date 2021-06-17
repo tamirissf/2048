@@ -29,7 +29,9 @@ const updateRow = (size, row, pressedKey) => {
   
   const rowSize = row.length;
   const newLine = [];
+
   let reference = null;
+  let isGameWon = false;
 
   for (let i = 0; i < rowSize; i++)
   {
@@ -48,6 +50,10 @@ const updateRow = (size, row, pressedKey) => {
     }
     else if (block.value === reference.value)
     {
+      const newValue = block.value * 2;
+      if (newValue === 2048) {
+        isGameWon = true;
+      }
       newLine.push({
         ...block,
         value: block.value * 2,
@@ -70,7 +76,10 @@ const updateRow = (size, row, pressedKey) => {
     }
   }
 
-  return readFromEnd ? _.reverse(newLine) : newLine;
+  return {
+    isGameWon,
+    row: readFromEnd ? _.reverse(newLine) : newLine,
+  };
 }
 
 const generateNewRandomBlock = (size, emptySpaces) => {
@@ -84,7 +93,7 @@ const generateNewRandomBlock = (size, emptySpaces) => {
       : randomPos + size - randomRow.amount,
     [getFixedAxis(moveAlongAxis)]: randomRow.index,
     id: uuidv4(),
-    value: Math.random() > 0.2 ? 2 : 4,
+    value: Math.random() > 0.1 ? 2 : 4,
   }
 }
 
@@ -102,6 +111,7 @@ export const getInitialGame = size => (
     ],
     isUpdated: true,
     isGameOver: false,
+    isGameWon: false,
   }
 );
 
@@ -109,12 +119,14 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
   const pressedKey = keys[pressedKeyStr];
   const newBoard = [];
   const emptySpaces = [];
+  let hasWon = false;
 
   const rows = _.groupBy(currentBoard, getFixedAxis(pressedKey.moveAlongAxis));
   for (let i = 0; i < size; i++)
   {
     if (rows[i]) {
-      const newRow = updateRow(size, rows[i], pressedKey);
+      const { isGameWon, row: newRow } = updateRow(size, rows[i], pressedKey);
+      hasWon = isGameWon || hasWon;
       newBoard.push(...newRow);
 
       const emptySpacesAmount = size - newRow.length;
@@ -132,6 +144,7 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
 
   return ({
     isUpdated: true,
+    isGameWon: hasWon,
     isGameOver: isBoardFull(newBoard, size) && noMoviesLeft(newBoard, pressedKey.moveAlongAxis),
     blocks: newBoard
   });

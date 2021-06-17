@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
-import GameOverWarning from '../GameOverWarning';
+import Warning from '../Warning';
 
 import {
   getInitialGame,
@@ -19,15 +19,22 @@ const SIZE = 4;
 function Board({ pressedKeyEvent }) {
   const [board, updateBoard] = useState(getInitialGame(SIZE));
 
+  const {
+    isUpdated,
+    isGameWon,
+    isGameOver,
+    blocks
+  } = board;
+
   useEffect(() => {
-    if (pressedKeyEvent && !board.isGameOver) {
-      updateBoard(sortBlocksByAxis(board.blocks, pressedKeyEvent.key))
+    if (pressedKeyEvent && !isGameOver && !isGameWon) {
+      updateBoard(sortBlocksByAxis(blocks, pressedKeyEvent.key))
     }
   }, [pressedKeyEvent]);
 
   useEffect(() => {
-    if (!board.isUpdated && !board.isGameOver) {
-      updateBoard(updateBoardFunc(SIZE, board.blocks, pressedKeyEvent.key));
+    if (!isUpdated && !isGameOver && !isGameWon) {
+      updateBoard(updateBoardFunc(SIZE, blocks, pressedKeyEvent.key));
     }
   }, [board]);
 
@@ -53,8 +60,8 @@ function Board({ pressedKeyEvent }) {
         }
       </TransitionGroup>
       {
-        board.isGameOver
-          ? <GameOverWarning />
+        isGameOver || isGameWon
+          ? <Warning message={isGameOver ? 'Game Over!' : 'Congrats!'}/>
           : null
       }
     </BoardWrapper>

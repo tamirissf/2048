@@ -2,12 +2,12 @@ import React from 'react';
 
 import { Wrapper } from './styles';
 
-function GameOverWarning() {
+function Warning({ message }) {
   return (
     <Wrapper>
-      Game over!
+      {message}
     </Wrapper>
   )
 }
 
-export default GameOverWarning;
+export default Warning;
