@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 import Warning from '../Warning';
@@ -23,8 +23,12 @@ function Board({ pressedKeyEvent }) {
     isUpdated,
     isGameWon,
     isGameOver,
-    blocks
+    blocks,
   } = board;
+
+  const resetGame = useCallback(() => {
+    updateBoard(getInitialGame());
+  })
 
   useEffect(() => {
     if (pressedKeyEvent && !isGameOver && !isGameWon) {
@@ -61,7 +65,7 @@ function Board({ pressedKeyEvent }) {
       </TransitionGroup>
       {
         isGameOver || isGameWon
-          ? <Warning message={isGameOver ? 'Game Over!' : 'Congrats!'}/>
+          ? <Warning message={isGameOver ? 'GAME OVER!' : 'CONGRATS!'} resetGame={resetGame} />
           : null
       }
     </BoardWrapper>
