@@ -27,58 +27,47 @@ const getFixedAxis = moveAlongAxis => (
 const updateRow = (size, row, pressedKey) => {
   const { readFromEnd, moveAlongAxis } = pressedKey;
   
-  const rowSize = row.length;
-  const newLine = [];
+  const rowLastPos = row.length - 1;
+  const updatedRow = [];
 
   let reference = null;
   let isGameWon = false;
 
-  for (let i = 0; i < rowSize; i++)
+  const pushBlockToNewRow = (block, newValue) => (
+    updatedRow.push({
+      ...block,
+      value: newValue || block.value,
+      [moveAlongAxis]: readFromEnd ? size - 1 - updatedRow.length : updatedRow.length
+    })
+  )
+
+  for (let i = 0; i <= rowLastPos; i++)
   {
-    const index = readFromEnd ? rowSize - 1 - i : i;
-    const block = row[index];
+    const block = row[readFromEnd ? rowLastPos - i : i];
 
     if (!reference)
     {
       reference = block;
-      if (i === rowSize - 1) {
-        newLine.push({
-          ...block,
-          [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
-        });
-      }
+      if (i === rowLastPos) { pushBlockToNewRow(block) }
     }
     else if (block.value === reference.value)
     {
       const newValue = block.value * 2;
-      if (newValue === 2048) {
-        isGameWon = true;
-      }
-      newLine.push({
-        ...block,
-        value: block.value * 2,
-        [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
-      });
+      pushBlockToNewRow(block, newValue);
       reference = null;
+
+      if (newValue === 2048) { isGameWon = true; }
     }
     else {
-      newLine.push({
-        ...reference,
-        [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
-      });
+      pushBlockToNewRow(reference);
       reference = block;
-      if (i === rowSize - 1) {
-        newLine.push({
-          ...block,
-          [moveAlongAxis]: readFromEnd ? size - 1 - newLine.length : newLine.length,
-        });
-      }
+      if (i === rowLastPos) { pushBlockToNewRow(block); }
     }
   }
 
   return {
     isGameWon,
-    row: readFromEnd ? _.reverse(newLine) : newLine,
+    row: readFromEnd ? _.reverse(updatedRow) : updatedRow,
   };
 }
 
@@ -151,18 +140,20 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
 }
 
 export const noMoviesLeft = (newBoard, moveAlongAxis) => {
-  console.log(newBoard);
   const fixedAxis = getFixedAxis(moveAlongAxis);
   const sortedBoard = _.sortBy(newBoard, [fixedAxis, moveAlongAxis]);
   for (let i = 1; i < sortedBoard.length; i++) {
-    if (sortedBoard[i-1][fixedAxis] === sortedBoard[i][fixedAxis] && sortedBoard[i-1].value === sortedBoard[i].value) {
+    const currBlock = sortedBoard[i];
+    const prevBlock = sortedBoard[i-1];
+    if (prevBlock[fixedAxis] === currBlock[fixedAxis] && prevBlock.value === currBlock.value) {
       return false;
     }
   }
   const transposedBoard = _.sortBy(newBoard, [moveAlongAxis, fixedAxis]);
-  console.log(transposedBoard);
   for (let i = 1; i < transposedBoard.length; i++) {
-    if (transposedBoard[i-1][moveAlongAxis] === transposedBoard[i][moveAlongAxis] && transposedBoard[i-1].value === transposedBoard[i].value) {
+    const currBlock = transposedBoard[i];
+    const prevBlock = transposedBoard[i-1];
+    if (prevBlock[moveAlongAxis] === currBlock[moveAlongAxis] && prevBlock.value === currBlock.value) {
       return false;
     }
   }
