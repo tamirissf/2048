@@ -32,12 +32,22 @@ function Board({ pressedKeyEvent }) {
 
   useEffect(() => {
     if (pressedKeyEvent && !isGameOver && !isGameWon) {
+      /*
+        Because of the way React identifies itens contained in an array, the array needs
+        to, primarily, be sorted considering the axis which the movement will accour along.
+        After that, the board can be appropriately updated with the blocks new values
+        and positions
+      */
       updateBoard(sortBlocksByAxis(blocks, pressedKeyEvent.key))
     }
   }, [pressedKeyEvent]);
 
   useEffect(() => {
     if (!isUpdated && !isGameOver && !isGameWon) {
+      /*
+        Board will be updated considering the key that was pressed and the
+        current position and value of the blocks
+      */
       updateBoard(updateBoardFunc(SIZE, blocks, pressedKeyEvent.key));
     }
   }, [board]);

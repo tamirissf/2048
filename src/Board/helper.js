@@ -20,6 +20,9 @@ const keys = {
   }
 }
 
+/*
+  If block will move along an axis, the other one is the fixed one.
+*/
 const getFixedAxis = moveAlongAxis => (
   moveAlongAxis === 'x' ? 'y' : 'x'
 );
@@ -41,6 +44,15 @@ const updateRow = (size, row, pressedKey) => {
     })
   )
 
+  /*
+    Each block will be pushed into the updated row with a new position based on the
+    direction of the movement along the axis and the amount of blocks that are already
+    there. In case of a merge, only one of them is going to be maintained only with its
+    value updated (multiplied by 2). A reference block is used to keep on track the last
+    value evaluated, being possible to know if it's case to merge.
+
+    Blocks' ids need to be maintained so animations can work properly.
+  */
   for (let i = 0; i <= rowLastPos; i++)
   {
     const block = row[readFromEnd ? rowLastPos - i : i];
@@ -71,6 +83,9 @@ const updateRow = (size, row, pressedKey) => {
   };
 }
 
+/*
+  Generates a new block based on remaining empty spaces
+*/
 const generateNewRandomBlock = (size, emptySpaces) => {
   const randomRow = emptySpaces[Math.floor(Math.random() * emptySpaces.length)];
   const randomPos = Math.floor(Math.random() * randomRow.amount);
@@ -110,7 +125,9 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
   const emptySpaces = [];
   let hasWon = false;
 
+  // Creates rows based on the move-along axis.
   const rows = _.groupBy(currentBoard, getFixedAxis(pressedKey.moveAlongAxis));
+
   for (let i = 0; i < size; i++)
   {
     if (rows[i]) {
@@ -139,6 +156,10 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
   });
 }
 
+/*
+  Checks if there is at least one possible movement when the board
+  has no more empty spaces.
+*/
 export const noMoviesLeft = (newBoard, moveAlongAxis) => {
   const fixedAxis = getFixedAxis(moveAlongAxis);
   const sortedBoard = _.sortBy(newBoard, [fixedAxis, moveAlongAxis]);
