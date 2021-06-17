@@ -86,6 +86,31 @@ const updateRow = (size, row, pressedKey) => {
 }
 
 /*
+  Checks if there is at least one possible movement when the board
+  has no more empty spaces.
+*/
+const noMoviesLeft = (newBoard, moveAlongAxis) => {
+  const fixedAxis = getFixedAxis(moveAlongAxis);
+  const sortedBoard = _.sortBy(newBoard, [fixedAxis, moveAlongAxis]);
+  for (let i = 1; i < sortedBoard.length; i++) {
+    const currBlock = sortedBoard[i];
+    const prevBlock = sortedBoard[i-1];
+    if (prevBlock[fixedAxis] === currBlock[fixedAxis] && prevBlock.value === currBlock.value) {
+      return false;
+    }
+  }
+  const transposedBoard = _.sortBy(newBoard, [moveAlongAxis, fixedAxis]);
+  for (let i = 1; i < transposedBoard.length; i++) {
+    const currBlock = transposedBoard[i];
+    const prevBlock = transposedBoard[i-1];
+    if (prevBlock[moveAlongAxis] === currBlock[moveAlongAxis] && prevBlock.value === currBlock.value) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/*
   Generates a new block based on remaining empty spaces
 */
 const generateNewRandomBlock = (size, emptySpaces) => {
@@ -156,31 +181,6 @@ export const updateBoardFunc = (size, currentBoard, pressedKeyStr) => {
     isGameOver: isBoardFull(newBoard, size) && noMoviesLeft(newBoard, pressedKey.moveAlongAxis),
     blocks: newBoard
   });
-}
-
-/*
-  Checks if there is at least one possible movement when the board
-  has no more empty spaces.
-*/
-export const noMoviesLeft = (newBoard, moveAlongAxis) => {
-  const fixedAxis = getFixedAxis(moveAlongAxis);
-  const sortedBoard = _.sortBy(newBoard, [fixedAxis, moveAlongAxis]);
-  for (let i = 1; i < sortedBoard.length; i++) {
-    const currBlock = sortedBoard[i];
-    const prevBlock = sortedBoard[i-1];
-    if (prevBlock[fixedAxis] === currBlock[fixedAxis] && prevBlock.value === currBlock.value) {
-      return false;
-    }
-  }
-  const transposedBoard = _.sortBy(newBoard, [moveAlongAxis, fixedAxis]);
-  for (let i = 1; i < transposedBoard.length; i++) {
-    const currBlock = transposedBoard[i];
-    const prevBlock = transposedBoard[i-1];
-    if (prevBlock[moveAlongAxis] === currBlock[moveAlongAxis] && prevBlock.value === currBlock.value) {
-      return false;
-    }
-  }
-  return true;
 }
 
 export const sortBlocksByAxis = (currentBoard, pressedKeyStr) => (
