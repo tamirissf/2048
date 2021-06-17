@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
+import { colors } from '../colors';
+
 const keys = {
   'ArrowLeft': {
     moveAlongAxis: 'x',
@@ -191,34 +193,6 @@ export const sortBlocksByAxis = (currentBoard, pressedKeyStr) => (
   }
 );
 
-export const getBlockColor = value => {
-  switch(value)
-  {
-    case 2:
-      return '#282c34';
-    case 4:
-      return '#253049';
-    case 8:
-      return '#1e3769';
-    case 16:
-      return '#1a3e86';
-    case 32:
-      return '#16429b';
-    case 64:
-      return '#1048b8';
-    case 128:
-      return '#0748cb';
-    case 256:
-      return '#2566e9';
-    case 512:
-      return '#5287f1';
-    case 1024:
-      return '#73a0f9';
-    case 2048: 
-      return '#88aaf0'
-    default:
-      return ''
-  }
-}
+export const getBlockColor = value => colors[value];
 
 export default null;

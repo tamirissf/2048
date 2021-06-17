@@ -10,9 +10,7 @@ import {
   sortBlocksByAxis,
   getBlockColor,
 } from './helper';
-import { BoardWrapper } from './styles';
-
-import { Wrapper } from '../Square/styles';
+import { BoardWrapper, Block } from './styles';
 
 const SIZE = 4;
 
@@ -62,20 +60,25 @@ function Board({ pressedKeyEvent }) {
               timeout={150}
               classNames="block"
             >
-              <Wrapper
+              <Block
                 blockColor={getBlockColor(item.value)}
                 row={item.y}
                 column={item.x}
               >
                 {item.value}
-              </Wrapper>
+              </Block>
             </CSSTransition>
           ))
         }
       </TransitionGroup>
       {
         isGameOver || isGameWon
-          ? <Warning message={isGameOver ? 'GAME OVER!' : 'CONGRATS!'} resetGame={resetGame} />
+          ? (
+            <Warning
+              message={isGameOver ? 'GAME OVER!' : 'CONGRATS!'}
+              resetGame={resetGame}
+            />
+          )
           : null
       }
     </BoardWrapper>
