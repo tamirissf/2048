@@ -1,4 +1,7 @@
 import styled from 'styled-components';
+import { colors } from '../colors';
+
+const { lightGray, darkBlue, opaqueBlue } = colors;
 
 export const Wrapper = styled.div`
     position: absolute;
@@ -19,8 +22,8 @@ export const RestartButton = styled.button`
     font-size: 25px;
     margin-top: 20px;
     padding: 8px 30px;
-    background: linear-gradient(#344971, #2d374a);
-    color: #dadada;
+    background: linear-gradient(${darkBlue}, ${opaqueBlue});
+    color: ${lightGray};
     border-radius: 8px;
     border: 0px;
     font-family: 'Arial';
